@@ -140,8 +140,16 @@
             <label for="transactionType">Transaction Type </label>
             <select name="transactionType" v-model="tx.transactionType" >
             	<option value="AAK">Despatch Advice</option>
+            	<option value="AID">Certificate of conformity</option>
+            	<option value="ALO">Receiving Advice Number</option>
+            	<option value="AUJ">Proposed purchase order reference number</option>
+            	<option value="AXO">Product certification number</option>
             	<option value="BM">Bill of Lading</option>
+            	<option value="BN">Blanket order number</option>
             	<option value="IV">Invoice</option>
+            	<option value="MH">Manufacturing Order Number / Production Number</option>
+            	<option value="ON">Buyer Order Number</option>
+            	<option value="VN">Order Number (Supplier)</option>
             </select><br>
             <label for="transactionID">Transaction ID </label>
             <input name="transactionID" v-model="tx.transactionID" placeholder="Transaction ID" />
