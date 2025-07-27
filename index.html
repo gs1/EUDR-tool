@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RegulatoryNotification Form</title>
+  <style>
+    body { font-family: sans-serif; margin: 1rem; }
+    textarea { width: 90%; height: 100%; }
+    .tabs button { margin-right: 0.5rem; }
+    .form-group, .section { margin-bottom: 1rem; padding-left: 1rem; border-left: 2px solid #ccc; }
+    .nested-section { margin-left: 1rem; margin-right: 1rem;}
+    .btn-small { font-size: 0.9rem; margin: 0.25rem; }
+    input, select { margin-right: 0.5rem; margin-bottom: 0.5rem; }
+    .inputform { width: 54%; background-color: #FFCC99;}
+	.outerbox {height: 90; padding: 5px; background-color: #EEEEEE;}
+    .row {display: flex; flex-wrap:wrap;}    
+    .cell {    flex: 1 1 200px; border:1px solid black;
+    .app {height: 90%; width: 100%;}
+    .wide {width: 60%;}
+    .mandatory {border: 2px solid red;}
+    .orange {background-color: #FFCC99;}
+    .cyan {background-color: #99FFFF;}
+    .white {background-color: #FFFFFF;}
+    .greyoutline {border: 2px solid #999999; padding: 10px 10px 10px 10px;}
+	}
+
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { createApp, ref, reactive, defineComponent } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+
+
+    const ProductForm = defineComponent({
+      props: ['applicableProducts'],
+      setup(props) {
+        const add = () => props.applicableProducts.push({ gtin: '', hasBatchLotNumber: '' , hasSerialNumber: '', uri: ''});
+        const remove = (i) => props.applicableProducts.splice(i, 1);
+        return { add, remove };
+      },
+      template: `
+        <div class="section">
+          <h4>Applicable Products</h4>
+          <div v-for="(ap, i) in applicableProducts" :key="i" class="nested-section greyoutline">
+            <label for="gtin">GTIN </label>
+            <input type="text" name="gtin" v-model="ap.gtin" placeholder="GTIN">
+            <button @click="ap.gtin=pickOne(['09506000134352','09506000134369','09506000134376'])">Demo</button><br>
+            <label for="batchLotNumber">Batch/Lot Number </label>
+            <input name="batchLotNumber" v-model="ap.hasBatchLotNumber" placeholder="Batch/Lot Number" />
+            <button @click="ap.hasBatchLotNumber='ABC12345'">Demo</button><br>
+            <label for="serialNumber">Serial Number </label>
+            <input name="serialNumber" v-model="ap.hasSerialNumber" placeholder="Serial Number" />
+            <button @click="ap.hasSerialNumber='XYZ98765'">Demo</button><br>
+            <label for="uri"><i>OR</i> GS1 Digital Link URI </label>
+            <input name="uri" v-model="ap.uri" class="wide" placeholder="GS1 Digital Link URI using /01/" />
+            <button @click="ap.uri=pickOne(['https://example.com/01/09506000134352/10/ABC12345','https://example.com/01/09506000134369','https://example.com/01/09506000134376/21/XYZ98765'])">Demo</button><br>
+            
+            <button class="btn-small" @click="remove(i)">Remove Product</button>
+          </div>
+          <button class="btn-small" @click="add()">Add Product</button>
+        </div>
+      `,
+		methods: {
+			pickOne: function(arr) {
+				return arr[Math.floor(Math.random() * arr.length)];
+			} 
+		} 
+    });
+
+
+    // Component for identifier objects with nested fields
+    const RegulatoryIdentifierForm = defineComponent({
+      props: ['identifiers'],
+      components: { ProductForm },
+      setup(props) {
+        const add = () => props.identifiers.push({
+          regulatoryReferenceNumber: '',
+          regulatoryVerificationNumber: '',
+          regulatoryInformationProvider: '',
+          regulatoryReferenceApplicabilityStartDate: '',
+          regulatoryReferenceApplicabilityEndDate: '',
+          regulatoryIdentifierType: 'DUE_DILIGENCE_STATEMENT',
+          applicableProducts: [ {"gtin":"", "hasBatchLotNumber":"","hasSerialNumber":"","uri":""}]
+         });
+        const remove = (i) => props.identifiers.splice(i, 1);
+        return { add, remove };
+      },
+      template: `
+        <div class="section">
+          <h4>RegulatoryIdentifier Entries</h4>
+          <div v-for="(id, i) in identifiers" :key="i" class="nested-section white">
+            <div class="form-group">
+              <label for="regulatoryReferenceNumber">Reference Number </label>
+              <input name="regulatoryReferenceNumber" class="mandatory" v-model="id.regulatoryReferenceNumber" placeholder="Reference Number" />
+              <button @click="id.regulatoryReferenceNumber='r123'">Demo</button><br>
+              <label for="regulatoryVerificationNumber">Verification Number </label>
+              <input name="regulatoryVerificationNumber" class="mandatory" v-model="id.regulatoryVerificationNumber" placeholder="Verification Number" />
+              <button @click="id.regulatoryVerificationNumber='v456'">Demo</button><br>
+            </div>
+            <div class="form-group">
+              <label for="infoProvider">Information Provider </label>
+              <input name="infoProvider" class="wide" v-model="id.regulatoryInformationProvider" placeholder="Provider (Party GLN or GS1 Digital Link URI using /417/)" />
+              <button @click="id.regulatoryInformationProvider=pickOne(['9521141123454','https://infoProviderCo.example/417/9521141123454'])">Demo</button><br>
+            </div>
+            <div class="form-group">
+              <label for="startDate">Start Date (DDS) </label>
+              <input name="startDate" type="date" v-model="id.regulatoryReferenceApplicabilityStartDate" placeholder="Start Date" /><br>
+              <label for="endDate">End Date (DDS) </label>              
+              <input name="endDate" type="date" v-model="id.regulatoryReferenceApplicabilityEndDate" placeholder="End Date" />
+            </div>
+            <div class="form-group">
+              <product-form :applicableProducts="id.applicableProducts" />
+            </div>
+            <button class="btn-small" @click="remove(i)">Remove Identifier</button>
+            <hr />
+          </div>
+          <button class="btn-small mandatory" @click="add()">Add RegulatoryIdentifier</button>
+        </div>
+      `,
+		methods: {
+			pickOne: function(arr) {
+				return arr[Math.floor(Math.random() * arr.length)];
+			} 
+		} 
+     });
+
+    const TransactionForm = defineComponent({
+      props: ['transactions'],
+      setup(props) {
+        const add = () => props.transactions.push({ transactionID: '', transactionType: '', transactionDate: '' });
+        const remove = (i) => props.transactions.splice(i, 1);
+        return { add, remove };
+      },
+      template: `
+        <div class="section">
+          <h4>Applicable Transactions</h4>
+          <div v-for="(tx, i) in transactions" :key="i" class="nested-section">
+            <label for="transactionType">Transaction Type </label>
+            <select name="transactionType" v-model="tx.transactionType" >
+            	<option value="AAK">Despatch Advice</option>
+            	<option value="BM">Bill of Lading</option>
+            	<option value="IV">Invoice</option>
+            </select><br>
+            <label for="transactionID">Transaction ID </label>
+            <input name="transactionID" v-model="tx.transactionID" placeholder="Transaction ID" />
+            <button @click="tx.transactionID=pickOne(['12345','98765'])">Demo</button><br>
+            <input name="transactionDate" v-model="tx.transactionDate" placeholder="Transaction Date" type="date"/>
+            <button @click="tx.transactionDate='2025-06-15'">Demo</button><br>
+            
+            <button class="btn-small" @click="remove(i)">Remove Tx</button>
+          </div>
+          <button class="btn-small" @click="add()">Add Transaction</button>
+        </div>
+      `,
+    methods: {
+		pickOne: function(arr) {
+			return arr[Math.floor(Math.random() * arr.length)];
+		} 
+    } 
+     });
+    
+    
+
+    const JsonOutput = defineComponent({
+      props: ['data'],
+      methods: {
+        "copyOutput": function() {
+            const elOut = this.$refs.output;
+            elOut.select();
+            elOut.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            document.getSelection().removeAllRanges();
+        },
+        "openJSONLDplayground": function() {
+            const url="https://json-ld.org/playground/#startTab=tab-nquads&json-ld="+encodeURIComponent(JSON.stringify(this.data,null,4));
+            window.open(url,"_blank");
+        }
+      },
+      template: `<button @click="openJSONLDplayground()">Open in JSON-LD playground</button>&nbsp;<button @click="copyOutput()">Copy to clipboard</button><br><textarea ref="output" readonly>{{ JSON.stringify(data, null, 4) }}</textarea>`
+    });
+
+    const App = {
+      components: { TransactionForm, RegulatoryIdentifierForm, JsonOutput },
+      setup() {
+        const tab = 'both';
+        const state = reactive({
+          '@context': 'https://ref.gs1.org/guidelines/eudr/context.jsonld',
+          type: 'RegulatoryNotification',
+          messageSender: '',
+          messageRecipient: '',
+          regulatoryInformation: [{
+            regulatoryAct: 'EU 2023/1115',
+            regulationType: 'DEFORESTATION_REGULATION',
+            regulatoryIdentifier: [
+            	{
+            		"regulatoryReferenceNumber":"",
+            		"regulatoryVerificationNumber":"",
+            		"regulatoryInformationProvider":"",
+            		"regulatoryReferenceApplicabilityStartDate":"",
+            		"regulatoryReferenceApplicabilityEndDate":"",
+		            "regulatoryIdentifierType": 'DUE_DILIGENCE_STATEMENT',
+           		"applicableProducts": [
+            		 {"gtin":"", "hasBatchLotNumber":"","hasSerialNumber":"","uri":""}
+            		]
+            	}            		
+            	
+            ],
+            applicableTransactions: [],
+            
+          }]
+        });
+
+        const addRegInfo = () => 
+          state.regulatoryInformation.push({
+            regulatoryAct: 'EU 2023/1115',
+            regulationType: 'DEFORESTATION_REGULATION',
+            regulatoryIdentifier: [],
+            applicableTransactions: []
+          });
+        const removeRegInfo = (i) => state.regulatoryInformation.splice(i, 1);
+        return { tab, state, addRegInfo, removeRegInfo };
+      },
+      template: `
+        <div class="app">
+
+			<div class="outerbox">
+			<div class="row">
+
+          <div class="inputform cell">
+            <div class="form-group orange">
+              <label for="context">JSON-LD context resource URL </label>
+              <input name="context" class="wide" v-model="state['@context']" placeholder="@context (URI)" />
+            </div>
+            <div class="form-group orange">
+              <label for="messageSender">Message Sender </label>
+              <input name="messageSender" class="wide mandatory" v-model="state.messageSender" placeholder="messageSender (Party GLN or GS1 Digital Link URI using /417/)" />
+              <button @click="state.messageSender=pickOne(['9521141123454','https://senderCo.example/417/9521141123454'])">Demo</button>
+              <br>
+              <label for="messageRecipient">Message Recipient </label>
+              <input name="messageRecipient" class="wide mandatory" v-model="state.messageRecipient" placeholder="messageRecipient (Party GLN or GS1 Digital Link URI using /417/)" />
+              <button @click="state.messageRecipient=pickOne(['9529876543219','https://recipientCo.example/417/9529876543219'])">Demo</button>
+            </div>
+
+            <div class="section cyan" v-for="(ri, i) in state.regulatoryInformation" :key="i">
+              <h3>regulatoryInformation #{{ i + 1 }}</h3>
+              <p>Regulatory Act: {{ri.regulatoryAct}} <br>Regulation Type: {{ri.regulationType}}</p>
+
+              <transaction-form :transactions="ri.applicableTransactions" />
+              <regulatory-identifier-form :identifiers="ri.regulatoryIdentifier" />
+
+              <button class="btn-small" @click="removeRegInfo(i)">Remove regulatoryInformation</button>
+              <hr />
+            </div>
+            <button @click="addRegInfo()">Add regulatoryInformation</button>
+          </div>
+
+          <div class="cell">
+            <json-output :data="modifiedState" />
+          </div>
+          
+          </div>
+          </div>
+     </div>
+
+      `,
+    methods: {
+		pickOne: function(arr) {
+			return arr[Math.floor(Math.random() * arr.length)];
+		} 
+    }, 
+    computed: {
+    	modifiedState : function() {
+    		let m=JSON.parse(JSON.stringify(this.state));
+    		let n13=/^\d{13}$/;
+    		let n14=/^\d{14}$/;
+    		let x20=/^[!%-?A-Z_a-z\\x22]{1,20}$/;
+    		let dl417=/\/417\/\d{13}/;
+    		let dl01=/\/01\/\d{14}/;
+    		let webURI=/^http[s]?:\/\//;
+    		for (let field of ['messageSender','messageRecipient']) {
+				if ((m.hasOwnProperty(field)) && (m[field] == "")) {
+					delete m[field];
+				}
+				let valid=false;
+				if (n13.test(m[field])) {
+					m[field]={"partyGLN": m[field]};
+					valid=true;
+				}
+				if (webURI.test(m[field]) && dl417.test(m[field]))	{
+					valid=true;
+				}
+				if (!valid) {
+					delete m[field];
+				}
+    		}
+
+    		if (m.regulatoryInformation) {
+    			let i=0;
+    			for (let rInfo of m.regulatoryInformation) {
+    				// rInfo = m.regulatoryInformation[i];
+
+					let j=0;    			
+					for (let el of rInfo.regulatoryIdentifier) {
+					// el = m.regulatoryInformation[i].regulatoryIdentifier[j];
+						for (let field of ['regulatoryReferenceNumber','regulatoryVerificationNumber','regulatoryReferenceApplicabilityStartDate','regulatoryReferenceApplicabilityEndDate','regulatoryInformationProvider','applicableProducts']) {
+							if ((el.hasOwnProperty(field)) && (el[field] == "")) {
+								delete m.regulatoryInformation[i].regulatoryIdentifier[j][field];
+							}
+
+							
+							if (field == "regulatoryInformationProvider") {
+								let valid=false;
+								if (n13.test(m.regulatoryInformation[i].regulatoryIdentifier[j][field])) {
+									m.regulatoryInformation[i].regulatoryIdentifier[j][field]={"partyGLN": m.regulatoryInformation[i].regulatoryIdentifier[j][field]};
+									valid=true;
+								}
+								if ((webURI.test(m.regulatoryInformation[i].regulatoryIdentifier[j][field])) && (dl417.test(m.regulatoryInformation[i].regulatoryIdentifier[j][field])))	{
+									valid=true;
+								}
+								if (!valid) {
+									delete m.regulatoryInformation[i].regulatoryIdentifier[j][field];
+								}
+							}
+
+
+
+
+							if (field == "applicableProducts") {
+								let k=0;
+								console.log("m.regulatoryInformation[i].regulatoryIdentifier[j]="+JSON.stringify(m.regulatoryInformation[i].regulatoryIdentifier[j]));
+								for (let apel of m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts) {
+									let validGTIN = false;
+									let validBatchLot = false;
+									let validSerial = false;
+									let validGS1DLGTIN = false;
+
+									if ((apel.hasOwnProperty("gtin")) && (apel.gtin !=="") && (n14.test(apel.gtin))) {
+										validGTIN=true;
+									}
+									if ((apel.hasOwnProperty("hasBatchLotNumber")) && (x20.test(apel.hasBatchLotNumber))) {
+										validBatchLot=true;
+									}
+									if ((apel.hasOwnProperty("hasSerialNumber")) && (x20.test(apel.hasSerialNumber))) {
+										validSerial=true;
+									}
+									if ((apel.hasOwnProperty("uri")) && (dl01.test(apel.uri)) && (webURI.test(apel.uri))) {
+										validGS1DLGTIN=true;
+									}
+									
+									if ((!validGTIN)) {
+										delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].gtin;
+									}
+									
+									
+									if ((!validBatchLot) || (!validGTIN)) {
+										delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].hasBatchLotNumber;
+									}
+									if ((!validSerial) || (!validGTIN)) {
+										delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].hasSerialNumber;
+									}
+			
+									if (apel.uri !== "") {
+									
+										if ( (validGS1DLGTIN) ) {
+											m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k]=m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].uri;
+										}
+									} else {
+										delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].uri;
+									}
+									
+									if (Object.keys(apel) == 0) {
+										m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts.splice(k, 1);;
+									}
+									if (m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts.length ==0 ) {
+										delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts;
+									}
+									
+								k++;	
+								}
+							}
+
+
+
+
+
+						}
+						j++;
+					}
+
+					for (let field of ['regulatoryIdentifier','applicableTransactions']) {
+						if (rInfo.hasOwnProperty(field)) {
+							if (Array.isArray(rInfo[field]))  {
+								
+								
+								let n=0;
+								
+								for (let atel of rInfo[field]) {
+									for (let key of Object.keys(atel)) {
+										if (atel[key] == "") {
+											delete m.regulatoryInformation[i][field][n][key];
+										}
+									}
+
+									if (JSON.stringify(m.regulatoryInformation[i][field][n])== "{}") {
+										m.regulatoryInformation[i][field].splice(n, 1);
+									}
+
+								n++;
+								}
+
+									if (m.regulatoryInformation[i][field].length == 0) {
+										delete m.regulatoryInformation[i][field];
+									}								
+
+
+							}
+						}
+					}
+
+    			i++
+    			}
+    		}
+    		
+
+    		return m;
+    	}
+    }  
+    };
+
+    createApp(App).mount('#app');
+  </script>
+</body>
+</html>
