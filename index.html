@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>RegulatoryNotification Form</title>
+  <title>GS1 EUDR tool</title>
   <style>
     body { font-family: sans-serif; margin: 1rem; }
     textarea { width: 90%; height: 100%; }
@@ -14,7 +14,7 @@
     .inputform { width: 54%; background-color: #FFCC99;}
 	.outerbox {height: 90; padding: 5px; background-color: #EEEEEE;}
     .row {display: flex; flex-wrap:wrap;}    
-    .cell {    flex: 1 1 200px; border:1px solid black;
+    .cell {    flex: 1 1 200px; border:1px solid black; }
     .app {height: 90%; width: 100%;}
     .wide {width: 60%;}
     .mandatory {border: 2px solid red;}
@@ -22,7 +22,28 @@
     .cyan {background-color: #99FFFF;}
     .white {background-color: #FFFFFF;}
     .greyoutline {border: 2px solid #999999; padding: 10px 10px 10px 10px;}
-	}
+    .products {background-color: #CCFFCC;}
+    
+    /* Styles for the new JSON display */
+    #json-display {
+      font-family: monospace;
+      padding: 10px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background-color: #FFCC99;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      line-height: 1.4;
+      min-height: 200px;
+      overflow-y: auto;
+    }
+    .json-key { color: #881280; font-weight: bold; }
+    .json-string { color: #032f62; }
+    .json-number { color: #006c00; }
+    .json-boolean { color: #0076a5; }
+    .json-null { color: #808080; }
+    .json-punctuation { color: #333; }
+    .styled-json-line { display: inline; }
 
   </style>
 </head>
@@ -30,20 +51,26 @@
   <div id="app"></div>
 
   <script type="module">
-    import { createApp, ref, reactive, defineComponent } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+    import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
 
 
-    const ProductForm = defineComponent({
+    const ProductForm = {
       props: ['applicableProducts'],
-      setup(props) {
-        const add = () => props.applicableProducts.push({ gtin: '', hasBatchLotNumber: '' , hasSerialNumber: '', uri: ''});
-        const remove = (i) => props.applicableProducts.splice(i, 1);
-        return { add, remove };
+      methods: {
+        add() {
+          this.applicableProducts.push({ gtin: '', hasBatchLotNumber: '' , hasSerialNumber: '', uri: ''});
+        },
+        remove(i) {
+          this.applicableProducts.splice(i, 1);
+        },
+		pickOne(arr) {
+			return arr[Math.floor(Math.random() * arr.length)];
+		} 
       },
       template: `
         <div class="section">
           <h4>Applicable Products</h4>
-          <div v-for="(ap, i) in applicableProducts" :key="i" class="nested-section greyoutline">
+          <div v-for="(ap, i) in applicableProducts" :key="i" class="nested-section greyoutline products">
             <label for="gtin">GTIN </label>
             <input type="text" name="gtin" v-model="ap.gtin" placeholder="GTIN">
             <button @click="ap.gtin=pickOne(['09506000134352','09506000134369','09506000134376'])">Demo</button><br>
@@ -61,31 +88,32 @@
           </div>
           <button class="btn-small" @click="add()">Add Product</button>
         </div>
-      `,
-		methods: {
-			pickOne: function(arr) {
-				return arr[Math.floor(Math.random() * arr.length)];
-			} 
-		} 
-    });
+      `
+    };
 
 
     // Component for identifier objects with nested fields
-    const RegulatoryIdentifierForm = defineComponent({
+    const RegulatoryIdentifierForm = {
       props: ['identifiers'],
       components: { ProductForm },
-      setup(props) {
-        const add = () => props.identifiers.push({
-          regulatoryReferenceNumber: '',
-          regulatoryVerificationNumber: '',
-          regulatoryInformationProvider: '',
-          regulatoryReferenceApplicabilityStartDate: '',
-          regulatoryReferenceApplicabilityEndDate: '',
-          regulatoryIdentifierType: 'DUE_DILIGENCE_STATEMENT',
-          applicableProducts: [ {"gtin":"", "hasBatchLotNumber":"","hasSerialNumber":"","uri":""}]
+      methods: {
+        add() {
+          this.identifiers.push({
+            regulatoryReferenceNumber: '',
+            regulatoryVerificationNumber: '',
+            regulatoryInformationProvider: '',
+            regulatoryReferenceApplicabilityStartDate: '',
+            regulatoryReferenceApplicabilityEndDate: '',
+            regulatoryIdentifierType: 'DUE_DILIGENCE_STATEMENT',
+            applicableProducts: [ {"gtin":"", "hasBatchLotNumber":"","hasSerialNumber":"","uri":""}]
          });
-        const remove = (i) => props.identifiers.splice(i, 1);
-        return { add, remove };
+        },
+        remove(i) {
+          this.identifiers.splice(i, 1);
+        },
+		pickOne(arr) {
+			return arr[Math.floor(Math.random() * arr.length)];
+		} 
       },
       template: `
         <div class="section">
@@ -118,20 +146,21 @@
           </div>
           <button class="btn-small mandatory" @click="add()">Add RegulatoryIdentifier</button>
         </div>
-      `,
-		methods: {
-			pickOne: function(arr) {
-				return arr[Math.floor(Math.random() * arr.length)];
-			} 
-		} 
-     });
+      `
+     };
 
-    const TransactionForm = defineComponent({
+    const TransactionForm = {
       props: ['transactions'],
-      setup(props) {
-        const add = () => props.transactions.push({ transactionID: '', transactionType: '', transactionDate: '' });
-        const remove = (i) => props.transactions.splice(i, 1);
-        return { add, remove };
+      methods: {
+        add() {
+          this.transactions.push({ transactionID: '', transactionType: '', transactionDate: '' });
+        },
+        remove(i) {
+          this.transactions.splice(i, 1);
+        },
+		pickOne(arr) {
+			return arr[Math.floor(Math.random() * arr.length)];
+		} 
       },
       template: `
         <div class="section">
@@ -161,91 +190,358 @@
           </div>
           <button class="btn-small" @click="add()">Add Transaction</button>
         </div>
-      `,
-    methods: {
-		pickOne: function(arr) {
-			return arr[Math.floor(Math.random() * arr.length)];
-		} 
-    } 
-     });
+      `
+     };
     
     
 
-    const JsonOutput = defineComponent({
+    const JsonOutput = {
       props: ['data', 'showLicence', 'toggleLicence'],
+      data() {
+        return {
+          pathColorConfig: {
+            'messageSender': '#FFCC99;',
+            'messageRecipient': '#FFCC99;',
+            'regulatoryInformation': '#99FFFF;',
+            'regulatoryInformation.regulatoryAct': '#99FFFF;',
+            'regulatoryInformation.regulationType': '#99FFFF;',
+            'applicableTransactions': '#99FFFF;',
+            'regulatoryInformation.regulatoryIdentifier': '#FFFFFF;',
+            'regulatoryInformation.regulatoryIdentifier.applicableProducts': '#CCFFCC;'
+          }
+        };
+      },
+      computed: {
+        styledJson() {
+          return this.generateStyledJsonHtml(this.data);
+        }
+      },
       methods: {
         "copyOutput": function() {
-            const elOut = this.$refs.output;
-            elOut.select();
-            elOut.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-            document.getSelection().removeAllRanges();
+            const rawJson = JSON.stringify(this.data, null, 4);
+            navigator.clipboard.writeText(rawJson)
+              .catch(err => {
+                console.error('Could not copy text: ', err);
+                // Fallback for older browsers
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = rawJson;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+              });
         },
         "openJSONLDplayground": function() {
             const url="https://json-ld.org/playground/#startTab=tab-nquads&json-ld="+encodeURIComponent(JSON.stringify(this.data,null,4));
             window.open(url,"_blank");
+        },
+        generateStyledJsonHtml(data) {
+          let html = '';
+          const indent = 1; 
+
+          function processObject(obj, path, level) {
+            let keys = Object.keys(obj);
+            let indentStr = ' '.repeat(level * indent);
+            html += `${indentStr}{\n`;
+
+            keys.forEach((key, index) => {
+              const value = obj[key];
+              const newPath = path ? `${path}.${key}` : key;
+              const color = this.pathColorConfig[newPath];
+              const style = color ? ` style="background-color: ${color};"` : '';
+
+              if (style) html += `<span ${style}>`;
+              html += `${indentStr}  <span class="json-key">"${key}"</span><span class="json-punctuation">:</span> `;
+
+              if (typeof value === 'object' && value !== null) {
+                if (Array.isArray(value)) {
+                  processArray.call(this, value, newPath, level + 1);
+                } else {
+                  processObject.call(this, value, newPath, level + 1);
+                }
+              } else {
+                html += `<span class="json-${typeof value}">`;
+                html += JSON.stringify(value);
+                html += `</span>`;
+              }
+
+              if (index < keys.length - 1) {
+                html += `<span class="json-punctuation">,</span>`;
+              }
+              html += `\n`;
+              if (style) html += `</span>`;
+            });
+            html += `${indentStr}}`;
+          }
+
+          function processArray(arr, path, level) {
+            let indentStr = ' '.repeat(level * indent);
+            
+            const color = this.pathColorConfig[path];
+            const style = color ? ` style="background-color: ${color};"` : '';
+            if (style) html += `<span ${style}>`;
+            
+            html += `[\n`;
+            
+            arr.forEach((item, index) => {
+              const newPath = path;
+
+              html += `${indentStr}  `;
+
+              if (typeof item === 'object' && item !== null) {
+                if (Array.isArray(item)) {
+                  processArray.call(this, item, newPath, level + 1);
+                } else {
+                  processObject.call(this, item, newPath, level + 1);
+                }
+              } else {
+                html += `<span class="json-${typeof item}">`;
+                html += JSON.stringify(item);
+                html += `</span>`;
+              }
+              if (index < arr.length - 1) {
+                html += `<span class="json-punctuation">,</span>`;
+              }
+              html += `\n`;
+            });
+            html += `${indentStr}]`;
+            
+            if (style) html += `</span>`;
+          }
+
+          if (typeof data === 'object' && data !== null) {
+            if (Array.isArray(data)) {
+              processArray.call(this, data, '', 0);
+            } else {
+              processObject.call(this, data, '', 0);
+            }
+          } else {
+            html += `<span>${JSON.stringify(data)}</span>`;
+          }
+
+          return html;
         }
+
       },
       template: `
       <button @click="openJSONLDplayground()">Open in JSON-LD playground</button>&nbsp;
       <button @click="copyOutput()">Copy to clipboard</button>&nbsp;
-      <button @click="toggleLicence()">Show/hide Licence Info</button>
+      <button @click="toggleLicence()"><span>{{!showLicence ? 'Show' : 'Hide'}}</span> Licence Info</button>
       <div v-show="showLicence" class="nested-section greyoutline">
         <h3>Licence Information</h3>
-        <p><p>GS1&reg;, under its IP Policy, seeks to avoid uncertainty regarding intellectual property claims by requiring the participants in the Work Groups that developed the updates to the GS1 Web Vocabulary to agree to grant to GS1 members a royalty-free licence or a RAND licence to Necessary Claims, as that term is defined in the GS1 IP Policy. Furthermore, attention is drawn to the possibility that this tool and any implementation of one or more features of the GS1 Web Vocabulary may be the subject of a patent or other intellectual property right that does not involve a Necessary Claim. Any such patent or other intellectual property right is not subject to the licencing obligations of GS1. Moreover, the agreement to grant licences provided under the GS1 IP Policy does not include IP rights and any claims of third parties who were not participants in the Work Groups. Accordingly, GS1 recommends that any organisation developing an implementation designed to be in conformance with the GS1 Web Vocabulary should determine whether there are any patents that may encompass a specific implementation that the organisation is developing in compliance with the GS1 Web Vocabulary and whether a licence under a patent or other intellectual property right is needed. Such a determination of a need for licencing should be made in view of the details of the specific system designed by the organisation in consultation with their own patent counsel. THIS TOOL IS PROVIDED &quot;AS IS&quot; WITH NO WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY, NONINFRINGMENT, FITNESS FOR PARTICULAR PURPOSE, OR ANY WARRANTY OTHER WISE ARISING OUT OF THIS SPECIFICATION. GS1 disclaims all liability for any damages arising from use or misuse of this tool or the GS1 Web Vocabulary, whether special, indirect, consequential, or compensatory damages, and including liability for infringement of any intellectual property rights, relating to use of information in or reliance upon this tool. GS1 retains the right to make changes to the GS1 Web Vocabulary and this tool at any time, without notice. GS1 makes no warranty for the use of the GS1 Web Vocabulary or this tool and assumes no responsibility for any errors which may appear in the GS1 Web Vocabulary or this tool, nor does it make a commitment to update the information contained herein. GS1 and the GS1 logo are registered trademarks of GS1 AISBL.</p><p>Copyright 2015-2025 GS1 AISBL</p><p>Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License. You may obtain a copy of the License at <a href=&quot;http://www.apache.org/licenses/LICENSE-2.0&quot; target=&quot;blank&quot;>http://www.apache.org/licenses/LICENSE-2.0</a>.<p><p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</p>
+    	<p>GS1&reg;, under its IP Policy, seeks to avoid uncertainty regarding intellectual property claims by requiring the participants in the Work Groups that developed the updates to the GS1 Web Vocabulary to agree to grant to GS1 members a royalty-free licence or a RAND licence to Necessary Claims, as that term is defined in the GS1 IP Policy. Furthermore, attention is drawn to the possibility that this tool and any implementation of one or more features of the GS1 Web Vocabulary may be the subject of a patent or other intellectual property right that does not involve a Necessary Claim. Any such patent or other intellectual property right is not subject to the licencing obligations of GS1. Moreover, the agreement to grant licences provided under the GS1 IP Policy does not include IP rights and any claims of third parties who were not participants in the Work Groups. Accordingly, GS1 recommends that any organisation developing an implementation designed to be in conformance with the GS1 Web Vocabulary should determine whether there are any patents that may encompass a specific implementation that the organisation is developing in compliance with the GS1 Web Vocabulary and whether a licence under a patent or other intellectual property right is needed. Such a determination of a need for licencing should be made in view of the details of the specific system designed by the organisation in consultation with their own patent counsel. THIS TOOL IS PROVIDED &quot;AS IS&quot; WITH NO WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY, NONINFRINGMENT, FITNESS FOR PARTICULAR PURPOSE, OR ANY WARRANTY OTHER WISE ARISING OUT OF THIS SPECIFICATION. GS1 disclaims all liability for any damages arising from use or misuse of this tool or the GS1 Web Vocabulary, whether special, indirect, consequential, or compensatory damages, and including liability for infringement of any intellectual property rights, relating to use of information in or reliance upon this tool. GS1 retains the right to make changes to the GS1 Web Vocabulary and this tool at any time, without notice. GS1 makes no warranty for the use of the GS1 Web Vocabulary or this tool and assumes no responsibility for any errors which may appear in the GS1 Web Vocabulary or this tool, nor does it make a commitment to update the information contained herein. GS1 and the GS1 logo are registered trademarks of GS1 AISBL.</p><p>Copyright 2015-2025 GS1 AISBL</p><p>Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License. You may obtain a copy of the License at <a href=&quot;http://www.apache.org/licenses/LICENSE-2.0&quot; target=&quot;blank&quot;>http://www.apache.org/licenses/LICENSE-2.0</a>.</p><p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</p>
       </div>
       <br>
-      <textarea ref="output" readonly>{{ JSON.stringify(data, null, 4) }}</textarea>`
-    });
+      <div id="json-display" v-html="styledJson"></div>`
+    };
 
     const App = {
       components: { TransactionForm, RegulatoryIdentifierForm, JsonOutput },
-      setup() {
-        const tab = 'both';
-        const state = reactive({
-          '@context': 'https://ref.gs1.org/guidelines/eudr/context.jsonld',
-          type: 'RegulatoryNotification',
-          messageSender: '',
-          messageRecipient: '',
-          regulatoryInformation: [{
-            regulatoryAct: 'EU 2023/1115',
-            regulationType: 'DEFORESTATION_REGULATION',
-            regulatoryIdentifier: [
-            	{
-            		"regulatoryReferenceNumber":"",
-            		"regulatoryVerificationNumber":"",
-            		"regulatoryInformationProvider":"",
-            		"regulatoryReferenceApplicabilityStartDate":"",
-            		"regulatoryReferenceApplicabilityEndDate":"",
-		            "regulatoryIdentifierType": 'DUE_DILIGENCE_STATEMENT',
-           		"applicableProducts": [
-            		 {"gtin":"", "hasBatchLotNumber":"","hasSerialNumber":"","uri":""}
-            		]
-            	}            		
-            	
-            ],
-            applicableTransactions: [],
-            
-          }]
-        });
-
-        const showLicence = ref(false);
-
-        const toggleLicence = () => {
-          showLicence.value = !showLicence.value;
+      data() {
+        return {
+          tab: 'both',
+          state: {
+            '@context': 'https://ref.gs1.org/guidelines/eudr/context.jsonld',
+            type: 'RegulatoryNotification',
+            messageSender: '',
+            messageRecipient: '',
+            regulatoryInformation: [{
+              regulatoryAct: 'EU 2023/1115',
+              regulationType: 'DEFORESTATION_REGULATION',
+              regulatoryIdentifier: [
+                {
+                  "regulatoryReferenceNumber":"",
+                  "regulatoryVerificationNumber":"",
+                  "regulatoryInformationProvider":"",
+                  "regulatoryReferenceApplicabilityStartDate":"",
+                  "regulatoryReferenceApplicabilityEndDate":"",
+                  "regulatoryIdentifierType": 'DUE_DILIGENCE_STATEMENT',
+                  "applicableProducts": [
+                    {"gtin":"", "hasBatchLotNumber":"","hasSerialNumber":"","uri":""}
+                  ]
+                }            		
+              ],
+              applicableTransactions: [],
+            }]
+          },
+          showLicence: false,
         };
-        
-        const addRegInfo = () => 
-          state.regulatoryInformation.push({
+      },
+      methods: {
+        toggleLicence() {
+          this.showLicence = !this.showLicence;
+        },
+        addRegInfo() {
+          this.state.regulatoryInformation.push({
             regulatoryAct: 'EU 2023/1115',
             regulationType: 'DEFORESTATION_REGULATION',
             regulatoryIdentifier: [],
             applicableTransactions: []
           });
-        const removeRegInfo = (i) => state.regulatoryInformation.splice(i, 1);
-        
+        },
+        removeRegInfo(i) {
+          this.state.regulatoryInformation.splice(i, 1);
+        },
+		pickOne(arr) {
+			return arr[Math.floor(Math.random() * arr.length)];
+		} 
+      },
+      computed: {
+        modifiedState() {
+          let m=JSON.parse(JSON.stringify(this.state));
+          let n13=/^\d{13}$/;
+          let n14=/^\d{14}$/;
+          let x20=/^[!%-?A-Z_a-z\\x22]{1,20}$/;
+          let dl417=/\/417\/\d{13}/;
+          let dl01=/\/01\/\d{14}/;
+          let webURI=/^http[s]?:\/\//;
+          for (let field of ['messageSender','messageRecipient']) {
+            if ((m.hasOwnProperty(field)) && (m[field] == "")) {
+              delete m[field];
+            }
+            let valid=false;
+            if (n13.test(m[field])) {
+              m[field]={"partyGLN": m[field]};
+              valid=true;
+            }
+            if (webURI.test(m[field]) && dl417.test(m[field]))	{
+              valid=true;
+            }
+            if (!valid) {
+              delete m[field];
+            }
+          }
 
-        return { tab, state, addRegInfo, removeRegInfo, showLicence, toggleLicence };
+          if (m.regulatoryInformation) {
+            let i=0;
+            for (let rInfo of m.regulatoryInformation) {
+              // rInfo = m.regulatoryInformation[i];
+
+              let j=0;    			
+              for (let el of rInfo.regulatoryIdentifier) {
+                // el = m.regulatoryInformation[i].regulatoryIdentifier[j];
+                for (let field of ['regulatoryReferenceNumber','regulatoryVerificationNumber','regulatoryReferenceApplicabilityStartDate','regulatoryReferenceApplicabilityEndDate','regulatoryInformationProvider','applicableProducts']) {
+                  if ((el.hasOwnProperty(field)) && (el[field] == "")) {
+                    delete m.regulatoryInformation[i].regulatoryIdentifier[j][field];
+                  }
+
+                  
+                  if (field == "regulatoryInformationProvider") {
+                    let valid=false;
+                    if (n13.test(m.regulatoryInformation[i].regulatoryIdentifier[j][field])) {
+                      m.regulatoryInformation[i].regulatoryIdentifier[j][field]={"partyGLN": m.regulatoryInformation[i].regulatoryIdentifier[j][field]};
+                      valid=true;
+                    }
+                    if ((webURI.test(m.regulatoryInformation[i].regulatoryIdentifier[j][field])) && (dl417.test(m.regulatoryInformation[i].regulatoryIdentifier[j][field])))	{
+                      valid=true;
+                    }
+                    if (!valid) {
+                      delete m.regulatoryInformation[i].regulatoryIdentifier[j][field];
+                    }
+                  }
+
+
+
+
+                  if (field == "applicableProducts") {
+                    let k=0;
+                    console.log("m.regulatoryInformation[i].regulatoryIdentifier[j]="+JSON.stringify(m.regulatoryInformation[i].regulatoryIdentifier[j]));
+                    for (let apel of m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts) {
+                      let validGTIN = false;
+                      let validBatchLot = false;
+                      let validSerial = false;
+                      let validGS1DLGTIN = false;
+
+                      if ((apel.hasOwnProperty("gtin")) && (apel.gtin !=="") && (n14.test(apel.gtin))) {
+                        validGTIN=true;
+                      }
+                      if ((apel.hasOwnProperty("hasBatchLotNumber")) && (x20.test(apel.hasBatchLotNumber))) {
+                        validBatchLot=true;
+                      }
+                      if ((apel.hasOwnProperty("hasSerialNumber")) && (x20.test(apel.hasSerialNumber))) {
+                        validSerial=true;
+                      }
+                      if ((apel.hasOwnProperty("uri")) && (dl01.test(apel.uri)) && (webURI.test(apel.uri))) {
+                        validGS1DLGTIN=true;
+                      }
+                      
+                      if ((!validGTIN)) {
+                        delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].gtin;
+                      }
+                      
+                      
+                      if ((!validBatchLot) || (!validGTIN)) {
+                        delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].hasBatchLotNumber;
+                      }
+                      if ((!validSerial) || (!validGTIN)) {
+                        delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].hasSerialNumber;
+                      }
+      
+                      if (apel.uri !== "") {
+                      
+                        if ( (validGS1DLGTIN) ) {
+                          m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k]=m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].uri;
+                        }
+                      } else {
+                        delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].uri;
+                      }
+                      
+                      if (Object.keys(apel) == 0) {
+                        m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts.splice(k, 1);;
+                      }
+                      if (m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts.length ==0 ) {
+                        delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts;
+                      }
+                      
+                    k++;	
+                    }
+                  }
+
+
+
+
+
+                }
+                j++;
+              }
+
+              for (let field of ['regulatoryIdentifier','applicableTransactions']) {
+                if (rInfo.hasOwnProperty(field)) {
+                  if (Array.isArray(rInfo[field]))  {
+                    
+                    
+                    let n=0;
+                    
+                    for (let atel of rInfo[field]) {
+                      for (let key of Object.keys(atel)) {
+                        if (atel[key] == "") {
+                          delete m.regulatoryInformation[i][field][n][key];
+                        }
+                      }
+
+                      if (JSON.stringify(m.regulatoryInformation[i][field][n])== "{}") {
+                        m.regulatoryInformation[i][field].splice(n, 1);
+                      }
+
+                    n++;
+                    }
+
+                      if (m.regulatoryInformation[i][field].length == 0) {
+                        delete m.regulatoryInformation[i][field];
+                      }								
+
+
+                  }
+                }
+              }
+
+            i++
+            }
+          }
+          
+
+          return m;
+        }
       },
       template: `
         <div class="app">
@@ -289,169 +585,7 @@
           </div>
      </div>
 
-      `,
-    methods: {
-		pickOne: function(arr) {
-			return arr[Math.floor(Math.random() * arr.length)];
-		} 
-    }, 
-    computed: {
-    	modifiedState : function() {
-    		let m=JSON.parse(JSON.stringify(this.state));
-    		let n13=/^\d{13}$/;
-    		let n14=/^\d{14}$/;
-    		let x20=/^[!%-?A-Z_a-z\\x22]{1,20}$/;
-    		let dl417=/\/417\/\d{13}/;
-    		let dl01=/\/01\/\d{14}/;
-    		let webURI=/^http[s]?:\/\//;
-    		for (let field of ['messageSender','messageRecipient']) {
-				if ((m.hasOwnProperty(field)) && (m[field] == "")) {
-					delete m[field];
-				}
-				let valid=false;
-				if (n13.test(m[field])) {
-					m[field]={"partyGLN": m[field]};
-					valid=true;
-				}
-				if (webURI.test(m[field]) && dl417.test(m[field]))	{
-					valid=true;
-				}
-				if (!valid) {
-					delete m[field];
-				}
-    		}
-
-    		if (m.regulatoryInformation) {
-    			let i=0;
-    			for (let rInfo of m.regulatoryInformation) {
-    				// rInfo = m.regulatoryInformation[i];
-
-					let j=0;    			
-					for (let el of rInfo.regulatoryIdentifier) {
-					// el = m.regulatoryInformation[i].regulatoryIdentifier[j];
-						for (let field of ['regulatoryReferenceNumber','regulatoryVerificationNumber','regulatoryReferenceApplicabilityStartDate','regulatoryReferenceApplicabilityEndDate','regulatoryInformationProvider','applicableProducts']) {
-							if ((el.hasOwnProperty(field)) && (el[field] == "")) {
-								delete m.regulatoryInformation[i].regulatoryIdentifier[j][field];
-							}
-
-							
-							if (field == "regulatoryInformationProvider") {
-								let valid=false;
-								if (n13.test(m.regulatoryInformation[i].regulatoryIdentifier[j][field])) {
-									m.regulatoryInformation[i].regulatoryIdentifier[j][field]={"partyGLN": m.regulatoryInformation[i].regulatoryIdentifier[j][field]};
-									valid=true;
-								}
-								if ((webURI.test(m.regulatoryInformation[i].regulatoryIdentifier[j][field])) && (dl417.test(m.regulatoryInformation[i].regulatoryIdentifier[j][field])))	{
-									valid=true;
-								}
-								if (!valid) {
-									delete m.regulatoryInformation[i].regulatoryIdentifier[j][field];
-								}
-							}
-
-
-
-
-							if (field == "applicableProducts") {
-								let k=0;
-								console.log("m.regulatoryInformation[i].regulatoryIdentifier[j]="+JSON.stringify(m.regulatoryInformation[i].regulatoryIdentifier[j]));
-								for (let apel of m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts) {
-									let validGTIN = false;
-									let validBatchLot = false;
-									let validSerial = false;
-									let validGS1DLGTIN = false;
-
-									if ((apel.hasOwnProperty("gtin")) && (apel.gtin !=="") && (n14.test(apel.gtin))) {
-										validGTIN=true;
-									}
-									if ((apel.hasOwnProperty("hasBatchLotNumber")) && (x20.test(apel.hasBatchLotNumber))) {
-										validBatchLot=true;
-									}
-									if ((apel.hasOwnProperty("hasSerialNumber")) && (x20.test(apel.hasSerialNumber))) {
-										validSerial=true;
-									}
-									if ((apel.hasOwnProperty("uri")) && (dl01.test(apel.uri)) && (webURI.test(apel.uri))) {
-										validGS1DLGTIN=true;
-									}
-									
-									if ((!validGTIN)) {
-										delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].gtin;
-									}
-									
-									
-									if ((!validBatchLot) || (!validGTIN)) {
-										delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].hasBatchLotNumber;
-									}
-									if ((!validSerial) || (!validGTIN)) {
-										delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].hasSerialNumber;
-									}
-			
-									if (apel.uri !== "") {
-									
-										if ( (validGS1DLGTIN) ) {
-											m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k]=m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].uri;
-										}
-									} else {
-										delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts[k].uri;
-									}
-									
-									if (Object.keys(apel) == 0) {
-										m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts.splice(k, 1);;
-									}
-									if (m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts.length ==0 ) {
-										delete m.regulatoryInformation[i].regulatoryIdentifier[j].applicableProducts;
-									}
-									
-								k++;	
-								}
-							}
-
-
-
-
-
-						}
-						j++;
-					}
-
-					for (let field of ['regulatoryIdentifier','applicableTransactions']) {
-						if (rInfo.hasOwnProperty(field)) {
-							if (Array.isArray(rInfo[field]))  {
-								
-								
-								let n=0;
-								
-								for (let atel of rInfo[field]) {
-									for (let key of Object.keys(atel)) {
-										if (atel[key] == "") {
-											delete m.regulatoryInformation[i][field][n][key];
-										}
-									}
-
-									if (JSON.stringify(m.regulatoryInformation[i][field][n])== "{}") {
-										m.regulatoryInformation[i][field].splice(n, 1);
-									}
-
-								n++;
-								}
-
-									if (m.regulatoryInformation[i][field].length == 0) {
-										delete m.regulatoryInformation[i][field];
-									}								
-
-
-							}
-						}
-					}
-
-    			i++
-    			}
-    		}
-    		
-
-    		return m;
-    	}
-    }  
+      `
     };
 
     createApp(App).mount('#app');
