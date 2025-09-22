@@ -172,7 +172,7 @@
     
 
     const JsonOutput = defineComponent({
-      props: ['data'],
+      props: ['data', 'showLicence', 'toggleLicence'],
       methods: {
         "copyOutput": function() {
             const elOut = this.$refs.output;
@@ -186,7 +186,16 @@
             window.open(url,"_blank");
         }
       },
-      template: `<button @click="openJSONLDplayground()">Open in JSON-LD playground</button>&nbsp;<button @click="copyOutput()">Copy to clipboard</button><br><textarea ref="output" readonly>{{ JSON.stringify(data, null, 4) }}</textarea>`
+      template: `
+      <button @click="openJSONLDplayground()">Open in JSON-LD playground</button>&nbsp;
+      <button @click="copyOutput()">Copy to clipboard</button>&nbsp;
+      <button @click="toggleLicence()">Show/hide Licence Info</button>
+      <div v-show="showLicence" class="nested-section greyoutline">
+        <h3>Licence Information</h3>
+        <p><p>GS1&reg;, under its IP Policy, seeks to avoid uncertainty regarding intellectual property claims by requiring the participants in the Work Groups that developed the updates to the GS1 Web Vocabulary to agree to grant to GS1 members a royalty-free licence or a RAND licence to Necessary Claims, as that term is defined in the GS1 IP Policy. Furthermore, attention is drawn to the possibility that this tool and any implementation of one or more features of the GS1 Web Vocabulary may be the subject of a patent or other intellectual property right that does not involve a Necessary Claim. Any such patent or other intellectual property right is not subject to the licencing obligations of GS1. Moreover, the agreement to grant licences provided under the GS1 IP Policy does not include IP rights and any claims of third parties who were not participants in the Work Groups. Accordingly, GS1 recommends that any organisation developing an implementation designed to be in conformance with the GS1 Web Vocabulary should determine whether there are any patents that may encompass a specific implementation that the organisation is developing in compliance with the GS1 Web Vocabulary and whether a licence under a patent or other intellectual property right is needed. Such a determination of a need for licencing should be made in view of the details of the specific system designed by the organisation in consultation with their own patent counsel. THIS TOOL IS PROVIDED &quot;AS IS&quot; WITH NO WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY, NONINFRINGMENT, FITNESS FOR PARTICULAR PURPOSE, OR ANY WARRANTY OTHER WISE ARISING OUT OF THIS SPECIFICATION. GS1 disclaims all liability for any damages arising from use or misuse of this tool or the GS1 Web Vocabulary, whether special, indirect, consequential, or compensatory damages, and including liability for infringement of any intellectual property rights, relating to use of information in or reliance upon this tool. GS1 retains the right to make changes to the GS1 Web Vocabulary and this tool at any time, without notice. GS1 makes no warranty for the use of the GS1 Web Vocabulary or this tool and assumes no responsibility for any errors which may appear in the GS1 Web Vocabulary or this tool, nor does it make a commitment to update the information contained herein. GS1 and the GS1 logo are registered trademarks of GS1 AISBL.</p><p>Copyright 2015-2025 GS1 AISBL</p><p>Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License. You may obtain a copy of the License at <a href=&quot;http://www.apache.org/licenses/LICENSE-2.0&quot; target=&quot;blank&quot;>http://www.apache.org/licenses/LICENSE-2.0</a>.<p><p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</p>
+      </div>
+      <br>
+      <textarea ref="output" readonly>{{ JSON.stringify(data, null, 4) }}</textarea>`
     });
 
     const App = {
@@ -220,6 +229,12 @@
           }]
         });
 
+        const showLicence = ref(false);
+
+        const toggleLicence = () => {
+          showLicence.value = !showLicence.value;
+        };
+        
         const addRegInfo = () => 
           state.regulatoryInformation.push({
             regulatoryAct: 'EU 2023/1115',
@@ -228,7 +243,9 @@
             applicableTransactions: []
           });
         const removeRegInfo = (i) => state.regulatoryInformation.splice(i, 1);
-        return { tab, state, addRegInfo, removeRegInfo };
+        
+
+        return { tab, state, addRegInfo, removeRegInfo, showLicence, toggleLicence };
       },
       template: `
         <div class="app">
@@ -265,7 +282,7 @@
           </div>
 
           <div class="cell">
-            <json-output :data="modifiedState" />
+            <json-output :data="modifiedState" :showLicence="showLicence" :toggleLicence="toggleLicence" />
           </div>
           
           </div>
